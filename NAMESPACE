@@ -1,0 +1,5 @@
+exportPattern("^[[:alpha:]]+")
+useDynLib(wtcrsk)
+export(crr.wt)
+export(predict.crrwt)
+export(summary.crrwt)
