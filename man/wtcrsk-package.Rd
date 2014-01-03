@@ -3,7 +3,7 @@
 \alias{wtcrsk}
 \docType{package}
 \title{
-A proportional hazards regression model for the subdistribution with covariates adjusted censoring weight for competing risks data
+Competing risks regression models with covariate-adjusted censoring weight
 }
 \description{
 Estimation and regression modeling of subdistribution functions for competing risks data with adjustment for covariate-dependent censoring, as described in He et al. (2013).
@@ -12,8 +12,8 @@ Estimation and regression modeling of subdistribution functions for competing ri
 \tabular{ll}{
 Package: \tab wtcrsk\cr
 Type: \tab Package\cr
-Version: \tab 1.0\cr
-Date: \tab 2013-12-16\cr
+Version: \tab 1.1\cr
+Date: \tab 2014-01-03\cr
 License: \tab GPL >= 2\cr
 }
 }

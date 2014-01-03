@@ -8,7 +8,7 @@ Regression modeling of subdistribution functions using the stratified Kaplan-Mei
 Fits a subdistribution hazards regression model using the stratified Kaplan-Meier adjusted weight. Use predicted censoring probability based on the stratified Kaplan-Meier estimate for each individual.
 }
 \usage{
-crr.wt.KM.str(t, ic, z, strata.var)
+crr.wt.KM.str(t, ic, z, strata.var, variance, var.conservative)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -16,6 +16,8 @@ crr.wt.KM.str(t, ic, z, strata.var)
   \item{ic}{a vector of cause indicators.}
   \item{z}{a matrix of covariates for fitting the model.}
   \item{strata.var}{a vector contains information about strata membership.}
+  \item{variance}{Includes variance calculation if TRUE, Skips variance calculation if FALSE.}
+  \item{var.conservative}{Includes minor term of variance of beta if FALSE, no minor term for variance of beta if TRUE.}
 }
 \details{
 Same estimating procedure with a different weight.

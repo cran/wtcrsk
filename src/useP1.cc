@@ -7,13 +7,13 @@
 using namespace std;
 using namespace TNT;
 
-extern "C" {void FGweight_KM(float *ts, int *ics, float *zs, int *N, int *NCOV, float *gfg1, float *var1, float *tbase_km, float *lambda10km, float *lambda10sd_km, float *Wlambda, float *Wbeta, float *conv);}
-extern "C" {void FGweight_COX(float *ts, int *ics, float *zs, float *zcs, int *n, int *ncov, int *ncovc, float *gfg3, float *var3, float *tbase_cox, float *lambda10cox, float *lambda10sd_cox, float *Wlambda, float *Wbeta, float *conv, float *censdet);}
-extern "C" {void FGweight_KM_Strata(float *ts, int *ics, float *zs, int *N, int *NCOV, float *gfg1, float *var1, float *tbase_km, float *lambda10km, float *lambda10sd_km, float *Wlambda, float *Wbeta, float *conv, int *NSTRATA, int *strata_var);}
-extern "C" {void FGweight_COX_Strata(float *ts, int *ics, float *zs, float *zcs, int *N, int *NCOV, int *NCOVC, float *gfg3, float *var3, float *tbase_cox, float *lambda10cox, float *lambda10sd_cox, float *Wlambda, float *Wbeta, float *conv, float *censdet,int *NSTRATA, int *strata_var);}
+extern "C" {void FGweight_KM(float *ts, int *ics, float *zs, int *N, int *NCOV, float *gfg1, float *var1, float *tbase_km, float *lambda10km, float *lambda10sd_km, float *Wlambda, float *Wbeta, float *conv, float *variance, float *var_conservative);}
+extern "C" {void FGweight_COX(float *ts, int *ics, float *zs, float *zcs, int *n, int *ncov, int *ncovc, float *gfg3, float *var3, float *tbase_cox, float *lambda10cox, float *lambda10sd_cox, float *Wlambda, float *Wbeta, float *conv, float *censdet, float *variance, float *var_conservative);}
+extern "C" {void FGweight_KM_Strata(float *ts, int *ics, float *zs, int *N, int *NCOV, float *gfg1, float *var1, float *tbase_km, float *lambda10km, float *lambda10sd_km, float *Wlambda, float *Wbeta, float *conv, int *NSTRATA, int *strata_var, float *variance, float *var_conservative);}
+extern "C" {void FGweight_COX_Strata(float *ts, int *ics, float *zs, float *zcs, int *N, int *NCOV, int *NCOVC, float *gfg3, float *var3, float *tbase_cox, float *lambda10cox, float *lambda10sd_cox, float *Wlambda, float *Wbeta, float *conv, float *censdet,int *NSTRATA, int *strata_var, float *variance, float *var_conservative);}
 				 
 // .C interface for "KM"				  
-void FGweight_KM(float *ts, int *ics, float *zs, int *N, int *NCOV, float *gfg1, float *var1, float *tbase_km, float *lambda10km, float *lambda10sd_km, float *Wlambda, float *Wbeta, float *conv) {
+void FGweight_KM(float *ts, int *ics, float *zs, int *N, int *NCOV, float *gfg1, float *var1, float *tbase_km, float *lambda10km, float *lambda10sd_km, float *Wlambda, float *Wbeta, float *conv, float *variance, float *var_conservative) {
 	//variable declaration
 	int n = *N;
 	int ncov = *NCOV;
@@ -75,7 +75,9 @@ void FGweight_KM(float *ts, int *ics, float *zs, int *N, int *NCOV, float *gfg1,
 	for(int k=0; k<ncov; k++) gfg1[k]=g2[k];	
 	
 	//variance calculation
-	W.fgest2km(tjp,njp,wy1,wdn1,gfg1,dnc,yc,dnci,var1,ncov,lambda10km,tbase_km,lambda10sd_km,Wlambda,Wbeta);
+	if(variance[0] == 1.) {
+		W.fgest2km(tjp,njp,wy1,wdn1,gfg1,dnc,yc,dnci,var1,ncov,lambda10km,tbase_km,lambda10sd_km,Wlambda,Wbeta,var_conservative);
+	}
 	
 	//memory cleanup
 	for(int i=0; i<n; i++) delete[] wdn1[i];
@@ -86,8 +88,9 @@ void FGweight_KM(float *ts, int *ics, float *zs, int *N, int *NCOV, float *gfg1,
 	delete[] dnci;
 }
 
+
 //.C interface for "COX"
-void FGweight_COX(float *ts, int *ics, float *zs, float *zcs, int *N, int *NCOV, int *NCOVC, float *gfg3, float *var3, float *tbase_cox, float *lambda10cox, float *lambda10sd_cox, float *Wlambda, float *Wbeta, float *conv, float *censdet) {
+void FGweight_COX(float *ts, int *ics, float *zs, float *zcs, int *N, int *NCOV, int *NCOVC, float *gfg3, float *var3, float *tbase_cox, float *lambda10cox, float *lambda10sd_cox, float *Wlambda, float *Wbeta, float *conv, float *censdet, float *variance, float *var_conservative) {
 	//variable declaration
 	int n = *N;
 	int ncov = *NCOV;
@@ -166,11 +169,13 @@ void FGweight_COX(float *ts, int *ics, float *zs, float *zcs, int *N, int *NCOV,
 	for(int k=0; k<ncov; k++) gfg3[k]=g2[k];	
 
 	//variance calculation
-	W.fgest2cox(tjp,njp,betac,ric,rlamc0,s1s0c,wy3,wdn3,gfg3,dnc,yc,dnci,var3,lambda10cox,tbase_cox,lambda10sd_cox,Wlambda,Wbeta,iflric);
-	if (iflagric==1) {
-		Rprintf("Warning message:\n Information matrix using a COX weight is not invertable.\n Program stopped.\n\n");
-		conv[0] = 0.;
-		return;
+	if(variance[0] == 1.) {
+		W.fgest2cox(tjp,njp,betac,ric,rlamc0,s1s0c,wy3,wdn3,gfg3,dnc,yc,dnci,var3,lambda10cox,tbase_cox,lambda10sd_cox,Wlambda,Wbeta,iflric,var_conservative);
+		if (iflagric==1) {
+			Rprintf("Warning message:\n Information matrix using a COX weight is not invertable.\n Program stopped.\n\n");
+			conv[0] = 0.;
+			return;
+		}
 	}
 
 	//memory cleanup
@@ -188,7 +193,7 @@ void FGweight_COX(float *ts, int *ics, float *zs, float *zcs, int *N, int *NCOV,
 
 
 // .C interface for "Stratified-KM"				  
-void FGweight_KM_Strata(float *ts, int *ics, float *zs, int *N, int *NCOV, float *gfg1, float *var1, float *tbase_km, float *lambda10km, float *lambda10sd_km, float *Wlambda, float *Wbeta, float *conv, int *NSTRATA, int *strata_var) {
+void FGweight_KM_Strata(float *ts, int *ics, float *zs, int *N, int *NCOV, float *gfg1, float *var1, float *tbase_km, float *lambda10km, float *lambda10sd_km, float *Wlambda, float *Wbeta, float *conv, int *NSTRATA, int *strata_var, float *variance, float *var_conservative) {
 	//variable declaration
 	int n = *N;
 	int ncov = *NCOV;
@@ -252,7 +257,9 @@ void FGweight_KM_Strata(float *ts, int *ics, float *zs, int *N, int *NCOV, float
 	for(int k=0; k<ncov; k++) gfg1[k]=g2[k];	
 	
 	//variance calculation
-	W.fgest2km(tjp,njp,wy1,wdn1,gfg1,dnc,yc,dnci,var1,ncov,lambda10km,tbase_km,lambda10sd_km,Wlambda,Wbeta);
+	if(variance[0] == 1.) {
+		W.fgest2km(tjp,njp,wy1,wdn1,gfg1,dnc,yc,dnci,var1,ncov,lambda10km,tbase_km,lambda10sd_km,Wlambda,Wbeta,var_conservative);
+	}
 	
 	//memory cleanup
 	for(int i=0; i<n; i++) delete[] dnc[i];
@@ -267,8 +274,9 @@ void FGweight_KM_Strata(float *ts, int *ics, float *zs, int *N, int *NCOV, float
 	delete[] dnci;
 }
 
+
 // .C interface for "Stratified-COX"
-void FGweight_COX_Strata(float *ts, int *ics, float *zs, float *zcs, int *N, int *NCOV, int *NCOVC, float *gfg3, float *var3, float *tbase_cox, float *lambda10cox, float *lambda10sd_cox, float *Wlambda, float *Wbeta, float *conv, float *censdet, int *NSTRATA, int *strata_var) {
+void FGweight_COX_Strata(float *ts, int *ics, float *zs, float *zcs, int *N, int *NCOV, int *NCOVC, float *gfg3, float *var3, float *tbase_cox, float *lambda10cox, float *lambda10sd_cox, float *Wlambda, float *Wbeta, float *conv, float *censdet, int *NSTRATA, int *strata_var, float *variance, float *var_conservative) {
 	//variable declaration
 	int n = *N;
 	int ncov = *NCOV;
@@ -355,11 +363,13 @@ void FGweight_COX_Strata(float *ts, int *ics, float *zs, float *zcs, int *N, int
 	for(int k=0; k<ncov; k++) gfg3[k]=g2[k];	
 
 	//variance calculation
-	W.fgest2cox(tjp,njp,betac,ric,rlamc0,s1s0c,wy3,wdn3,gfg3,dnc,yc,dnci,var3,lambda10cox,tbase_cox,lambda10sd_cox,Wlambda,Wbeta,iflric);
-	if (iflagric==1) {
-		Rprintf("Warning message:\n Information matrix using a COX weight is not invertable.\n Program stopped.\n\n");
-		conv[0] = 0.;
-		return;
+	if(variance[0] == 1.) {
+		W.fgest2cox(tjp,njp,betac,ric,rlamc0,s1s0c,wy3,wdn3,gfg3,dnc,yc,dnci,var3,lambda10cox,tbase_cox,lambda10sd_cox,Wlambda,Wbeta,iflric,var_conservative);
+		if (iflagric==1) {
+			Rprintf("Warning message:\n Information matrix using a COX weight is not invertable.\n Program stopped.\n\n");
+			conv[0] = 0.;
+			return;
+		}
 	}
 
 	//memory cleanup

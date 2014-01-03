@@ -8,13 +8,15 @@ Regression modeling of subdistribution functions using Kaplan-Meier weight.
 Fits a subdistribution hazards regression model using the Kaplan-Meier weight. This is the same model as Fine and Gray (1999).
 }
 \usage{
-crr.wt.KM(t, ic, z)
+crr.wt.KM(t, ic, z, variance, var.conservative)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{t}{a vector of observed times.}
   \item{ic}{a vector of cause indicators.}
   \item{z}{a matrix of covariates for fitting the model.}
+  \item{variance}{Includes variance calculation if TRUE, Skips variance calculation if FALSE.}
+  \item{var.conservative}{Includes minor term of variance of beta if FALSE, no minor term for variance of beta if TRUE.}
 }
 \details{
 More details are given in the reference.

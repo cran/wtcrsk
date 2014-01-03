@@ -48,7 +48,7 @@ public:
   FG_KM(int N, int NCOV, float *TS, int *ICS, float *ZS);
   void riskst(float **wdn1, float **wy1, vector<float> &dnc, vector<float> &yc, float **dnci, int *njp, vector<float> &tjp) const; 
   void fgest1(int njp, float **wy, float **wdn, vector<float> &gfg1, vector<float> &gfg2, float *iflag, int nvar) const;
-  void fgest2km(vector<float> &tjp, int njp, float **wy, float **wdn, float gfg1[], vector<float> &dnc, vector<float> &yc, float **dnci, float var[], int nvar, float lambda10[], float tbase[], float lambda10sd[], float Wlambda[], float Wbeta[]) const;
+  void fgest2km(vector<float> &tjp, int njp, float **wy, float **wdn, float gfg1[], vector<float> &dnc, vector<float> &yc, float **dnci, float var[], int nvar, float lambda10[], float tbase[], float lambda10sd[], float Wlambda[], float Wbeta[], float *var_conservative) const;
 };
 
 class FG_COX{
@@ -65,7 +65,7 @@ public:
   FG_COX(int N, int NCOV, int NCOVC, float *TS, int *ICS, float *ZS, float *ZCS);
   void riskst(float **wdn3, float **wy3, float *iflagc, vector<float> &betac, vector<float> &dnc, vector<float> &yc, float **dnci, int *njp, vector<float> &tjp, float **ric, vector<float> &rlamc0, float **s1s0c, int nvar, float *censdet) const; 
   void fgest1(int njp, float **wy, float **wdn, vector<float> &gfg1, vector<float> &gfg2, float *iflag, int nvar) const;
-  void fgest2cox(vector<float> &tjp, int njp, vector<float> &betac, float **ric, vector<float> &rlamc0, float **s1s0c, float **wy, float **wdn, float gfg1[], vector<float> &dnc, vector<float> &yc, float **dnci, float var[], float lambda10[], float tbase[], float lambda10sd[], float Wlambda[], float Wbeta[], float *iflagric) const;
+  void fgest2cox(vector<float> &tjp, int njp, vector<float> &betac, float **ric, vector<float> &rlamc0, float **s1s0c, float **wy, float **wdn, float gfg1[], vector<float> &dnc, vector<float> &yc, float **dnci, float var[], float lambda10[], float tbase[], float lambda10sd[], float Wlambda[], float Wbeta[], float *iflagric, float *var_conservative) const;
 };
 
 class FG_KM_Strata{
@@ -82,7 +82,7 @@ public:
   FG_KM_Strata(int N, int NCOV, int NSTRATA, float *TS, int *ICS, float *ZS, int *STRATA_VAR);
   void riskst(float **wdn1, float **wy1, float **dnc, float **yc, float **dnci, int *njp, vector<float> &tjp) const; 
   void fgest1(int njp, float **wy, float **wdn, vector<float> &gfg1, vector<float> &gfg2, float *iflag, int nvar) const;
-  void fgest2km(vector<float> &tjp, int njp, float **wy, float **wdn, float gfg1[], float **dnc, float **yc, float **dnci, float var[], int nvar, float lambda10[], float tbase[], float lambda10sd[], float Wlambda[], float Wbeta[]) const;
+  void fgest2km(vector<float> &tjp, int njp, float **wy, float **wdn, float gfg1[], float **dnc, float **yc, float **dnci, float var[], int nvar, float lambda10[], float tbase[], float lambda10sd[], float Wlambda[], float Wbeta[], float *var_conservative) const;
 };
 
 class FG_COX_Strata{
@@ -101,7 +101,7 @@ public:
   FG_COX_Strata(int N, int NCOV, int NCOVC, int NSTRATA, float *TS, int *ICS, float *ZS, float *ZCS, int *STRATA_VAR);
   void riskst(float **wdn3, float **wy3, float *iflagc, vector<float> &betac, float **dnc, float **yc, float **dnci, int *njp, vector<float> &tjp, float **ric, float **rlamc0, float ***s1s0c, int nvar, float *censdet) const; 
   void fgest1(int njp, float **wy, float **wdn, vector<float> &gfg1, vector<float> &gfg2, float *iflag, int nvar) const;
-  void fgest2cox(vector<float> &tjp, int njp, vector<float> &betac, float **ric, float **rlamc0, float ***s1s0c, float **wy, float **wdn, float gfg1[], float **dnc, float **yc, float **dnci, float var[], float lambda10[], float tbase[], float lambda10sd[], float Wlambda[], float Wbeta[], float *iflagric) const;
+  void fgest2cox(vector<float> &tjp, int njp, vector<float> &betac, float **ric, float **rlamc0, float ***s1s0c, float **wy, float **wdn, float gfg1[], float **dnc, float **yc, float **dnci, float var[], float lambda10[], float tbase[], float lambda10sd[], float Wlambda[], float Wbeta[], float *iflagric, float *var_conservative) const;
 };
 #endif
 

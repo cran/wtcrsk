@@ -8,7 +8,7 @@ Regression modeling of subdistribution function using the Cox weight.
 Fits a subdistribution hazards regression model using the Cox model adjusted weight. Use predicted censoring probability based on the Cox model for each individual.
 }
 \usage{
-crr.wt.COX(t, ic, z, zc)
+crr.wt.COX(t, ic, z, zc, variance, var.conservative)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -16,6 +16,8 @@ crr.wt.COX(t, ic, z, zc)
   \item{ic}{a vector of cause indicators.}
   \item{z}{a matrix of covariates for fitting the model.}
   \item{zc}{a matrix of associated covariates for fitting the censoring distribution.}
+  \item{variance}{Includes variance calculation if TRUE, Skips variance calculation if FALSE.}
+  \item{var.conservative}{Includes minor term of variance of beta if FALSE, no minor term for variance of beta if TRUE.}
 }
 \details{
 More details are given in the reference.

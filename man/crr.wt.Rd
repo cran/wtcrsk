@@ -9,7 +9,7 @@ Regression modeling of subdistribution functions in competing risks with adjustm
 }
 \usage{
 crr.wt(formula, data, weight = c("KM", "COX", "KM.Strata", "COX.Strata"), cens.formula, 
-cause = 1, strata.var)
+cause = 1, strata.var, variance = TRUE, var.conservative = FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -20,6 +20,8 @@ cause = 1, strata.var)
   \item{cause}{code of cause that is of interest.}
   \item{strata.var}{a categorical stratification variable, needed only for weight="KM.strata" or 
   weight="COX.strata".}
+  \item{variance}{Includes variance calculation if TRUE, Skips variance calculation if FALSE.}
+  \item{var.conservative}{Includes minor term of variance of beta if FALSE, no minor term for variance of beta if TRUE.}
 }
 \details{
 Fits the subdistribution hazards regression model with adjustments to covariate-dependent censoring as described in He et al. (2013). In addition, this function includes two new weights - "KM.strata" and "COX.strata" for fitting stratified models for the censoring distribution. \code{strata.var} is an option for users to specify the stratification variable, which has to be categorical with levels. When fitting the regression model using the "COX.strata" weight, the stratification variable cannot be included in your censoring-dependent covariates set. If \code{cens.formula} was not specified but either "COX" or "COX.strata" weight was used, by default the function uses "z" as the set of covariates for \code{cens.formula} with necessary removal of the specified stratification variable. 
@@ -32,10 +34,10 @@ Return values W.lambda and W.beta are used for prediction calculations. Incomple
   \item{converge}{1 if the iterative algorithm coverged. 0 if not.}
   \item{cens.det}{for weight="COX" and weight="COX.strata" only, 0 if there is a problem with the determinant of the information matrix when fitting the censoring distribution, 1 if no problem with determinant.}
   \item{beta}{estimated regression coefficients.}
-  \item{beta_sd}{estimated standard errors for regression coefficients.}
+  \item{beta_se}{estimated standard errors for regression coefficients.}
   \item{time}{a vector of observed failure times}
   \item{a10}{a vector of estimated cumulative baseline subdistribution hazards at observed failure times.}
-  \item{a10sd}{a vector of estimated standard errors for estimated cumulative baseline subdistribution hazards.}
+  \item{a10se}{a vector of estimated standard errors for estimated cumulative baseline subdistribution hazards.}
   \item{W_lambda}{used for prediction function.}
   \item{W_beta}{used for prediction function.}
   \item{n}{total number of observations.}

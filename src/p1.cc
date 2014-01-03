@@ -211,7 +211,7 @@ void FG_KM::fgest1(int njp, float **wy, float **wdn, vector<float> &gfg1, vector
 	return;
 }
 
-void FG_KM::fgest2km(vector<float> &tjp, int njp, float **wy, float **wdn, float gfg1[], vector<float> &dnc, vector<float> &yc, float **dnci, float var[], int nvar, float lambda10[], float tbase[], float lambda10sd[], float Wlambda[], float Wbeta[]) const {
+void FG_KM::fgest2km(vector<float> &tjp, int njp, float **wy, float **wdn, float gfg1[], vector<float> &dnc, vector<float> &yc, float **dnci, float var[], int nvar, float lambda10[], float tbase[], float lambda10sd[], float Wlambda[], float Wbeta[], float *var_conservative) const {
 	//variable declaration	
 	int count = 0, count2 = 0, tj = 0, count4 = 0;
 	float wdnsum, btmp, event_or_not, det, jnk4, jnk5, jnk6;
@@ -366,42 +366,44 @@ void FG_KM::fgest2km(vector<float> &tjp, int njp, float **wy, float **wdn, float
 		}	
 	}//endj
 	
-	//calculate dmci & yci
-	for(int j=0; j<njp; j++) {
-		if(j > 0) achat[j] = achat[j-1]+dnc[j]/yc[j];
-		else achat[j] = dnc[j]/yc[j];
-		for(int i=0; i<n; i++) {
-			yci[i][j] = 0.;
-			if (ts[i] >= tjp[j]) yci[i][j] = 1.;
-			dmci[i][j] = dnci[i][j]-yci[i][j]*(achat[j]-achat[j-1]);
-		}
-	}//endj
+	if(var_conservative[0] == 0.) {
+		//calculate dmci & yci
+		for(int j=0; j<njp; j++) {
+			if(j > 0) achat[j] = achat[j-1]+dnc[j]/yc[j];
+			else achat[j] = dnc[j]/yc[j];
+			for(int i=0; i<n; i++) {
+				yci[i][j] = 0.;
+				if (ts[i] >= tjp[j]) yci[i][j] = 1.;
+				dmci[i][j] = dnci[i][j]-yci[i][j]*(achat[j]-achat[j-1]);
+			}
+		}//endj
 	
-	//calculate Wc matrix and variance
-	for(int j=0; j<njp; j++) {
+		//calculate Wc matrix and variance
+		for(int j=0; j<njp; j++) {
+			for(int i=0; i<n; i++) {
+				if(j > 0) Wc[i][j] = Wc[i][j-1]+dmci[i][j]/yc[j];
+				else Wc[i][j] = dmci[i][j]/yc[j];
+			}
+		}//endj	
 		for(int i=0; i<n; i++) {
-			if(j > 0) Wc[i][j] = Wc[i][j-1]+dmci[i][j]/yc[j];
-			else Wc[i][j] = dmci[i][j]/yc[j];
-		}
-	}//endj	
-	for(int i=0; i<n; i++) {
-		for(int j=0; j<n; j++) {
-			for(int k=0; k<nvar; k++) temp[j][k] = 0.;
-			for(int j2=0; j2<njp; j2++) {
-				if(ts[j] == tjp[j2]) {
-					tj = j2;
-					break;
-				}
-			}//end j2
-			for(int j2=0; j2<njp; j2++) {
-				if(tj < j2) {
-					for(int k=0; k<nvar; k++) temp[j][k] += (zs[j][k]-s1s0[j2][k])*wdm1[j][j2]*(Wc[i][tj]-Wc[i][j2]);
-				}
-			}//end j2
-			for(int k=0; k<nvar; k++) psihat[i][k] += temp[j][k];
-		}
-	}//end i,j
-
+			for(int j=0; j<n; j++) {
+				for(int k=0; k<nvar; k++) temp[j][k] = 0.;
+				for(int j2=0; j2<njp; j2++) {
+					if(ts[j] == tjp[j2]) {
+						tj = j2;
+						break;
+					}
+				}//end j2
+				for(int j2=0; j2<njp; j2++) {
+					if(tj < j2) {
+						for(int k=0; k<nvar; k++) temp[j][k] += (zs[j][k]-s1s0[j2][k])*wdm1[j][j2]*(Wc[i][tj]-Wc[i][j2]);
+					}
+				}//end j2
+				for(int k=0; k<nvar; k++) psihat[i][k] += temp[j][k];
+			}
+		}//end i,j
+	}//end if
+	
 	for(int i=0; i<n; i++) {
 		for(int k=0; k<nvar; k++) {
 			tempsum2[i][k] = etahat[i][k]+psihat[i][k];                      
@@ -471,7 +473,7 @@ void FG_KM::fgest2km(vector<float> &tjp, int njp, float **wy, float **wdn, float
 			count4++;			
 		}
 	}//endj	
-	
+
 	for(int i=0; i<n; i++) {
 		for(int j=0; j<count4; j++) W_lambda[i][j] = W_lambda1[i][j]-W_lambda2[i][j];
 	}
@@ -886,7 +888,7 @@ void FG_COX::fgest1(int njp, float **wy, float **wdn, vector<float> &gfg1, vecto
 	return;
 }
 
-void FG_COX::fgest2cox(vector<float> &tjp, int njp, vector<float> &betac, float **ric, vector<float> &rlamc0, float **s1s0c, float **wy, float **wdn, float gfg1[], vector<float> &dnc, vector<float> &yc, float **dnci, float var[], float lambda10[], float tbase[], float lambda10sd[], float Wlambda[], float Wbeta[], float *iflagric) const {
+void FG_COX::fgest2cox(vector<float> &tjp, int njp, vector<float> &betac, float **ric, vector<float> &rlamc0, float **s1s0c, float **wy, float **wdn, float gfg1[], vector<float> &dnc, vector<float> &yc, float **dnci, float var[], float lambda10[], float tbase[], float lambda10sd[], float Wlambda[], float Wbeta[], float *iflagric, float *var_conservative) const {
 	//variable declaration
 	int count = 0, count2 = 0, count4 = 0, tj;
 	float wdnsum, btmp, btmp2, event_or_not, det, Wc1 = 0., Wc2 = 0., jnk1 = 0., jnk4, jnk5, jnk6;
@@ -1071,84 +1073,85 @@ void FG_COX::fgest2cox(vector<float> &tjp, int njp, vector<float> &betac, float 
 		}
 	}//endj
 
-	for(int j=0; j<njp; j++) {
-		s0c[j] = 0.;	
-		for(int i=0; i<n; i++) {
-			for(int k=0; k<ncovc; k++) {
-				if(j > 0) h[i][j][k] = h[i][j-1][k]+bzic[i]*(zcs[i][k]-s1s0c[j][k])*(rlamc0[j]-rlamc0[j-1]);
-				else h[i][j][k] = bzic[i]*(zcs[i][k]-s1s0c[j][k])*rlamc0[j];
-			}
-			if(ts[i] >= tjp[j]) s0c[j] += bzic[i];
-		}
-	}//end j
-	
-	det = Determinant(ric,ncovc);
-	for(int k=0; k<ncovc; k++) {
-		for(int l=0; l<ncovc; l++) ric0[k][l] = ric[k][l];
-	}
-	
-	if(fabs(det) > 0) ric0inv = invert(ric0);	
-	else {
-		iflagric[0] = 1.;
-		return;
-	}
-
-	for(int i=0; i<n; i++) {		
+	if(var_conservative[0] == 0.) {
 		for(int j=0; j<njp; j++) {
-			for(int k=0; k<ncovc; k++) tmp_1[i][k] += (zcs[i][k]-s1s0c[j][k])*dmci[i][j];
-		}			
-	}//end i
-	
-	for(int j=0; j<njp; j++) {
-		if(s0c[j] > 0.) {
+			s0c[j] = 0.;	
 			for(int i=0; i<n; i++) {
-				if(j > 0) tmp_2[i][j] = tmp_2[i][j-1]+dmci[i][j]/s0c[j];
-				else tmp_2[i][j] = dmci[i][j]/s0c[j];
-				
+				for(int k=0; k<ncovc; k++) {
+					if(j > 0) h[i][j][k] = h[i][j-1][k]+bzic[i]*(zcs[i][k]-s1s0c[j][k])*(rlamc0[j]-rlamc0[j-1]);
+					else h[i][j][k] = bzic[i]*(zcs[i][k]-s1s0c[j][k])*rlamc0[j];
+				}
+				if(ts[i] >= tjp[j]) s0c[j] += bzic[i];
 			}
+		}//end j
+	
+		det = Determinant(ric,ncovc);
+		for(int k=0; k<ncovc; k++) {
+			for(int l=0; l<ncovc; l++) ric0[k][l] = ric[k][l];
 		}
+	
+		if(fabs(det) > 0) ric0inv = invert(ric0);	
 		else {
-			for(int i=0; i<n; i++) {
-				if(j > 0) tmp_2[i][j] = tmp_2[i][j-1];
-				else tmp_2[i][j] = 0.;
-			}
+			iflagric[0] = 1.;
+			return;
 		}
-	}//endj
-	
-	for(int i=0; i<n; i++) {		
-		for(int j=0; j<njp; j++) {
-			for(int k=0; k<ncovc; k++) ht[k][0] = h[i][j][k];
-			jnktmp = matmult(transpose(ht),ric0inv);		
-			for(int k=0; k<ncovc; k++) jnk0[i][j][k] = jnktmp[0][k];		
-		}
-	}//end i
-	
-	for(int i=0; i<n; i++) {
-		for(int j=0; j<n; j++) {
-			for(int k=0; k<ncov; k++) temp[j][k] = 0.;
-			tj = 0;
-			for(int j2=0; j2<njp; j2++) {
-				if(ts[j] == tjp[j2]) {
-					tj = j2;
-					break;
-				}
-			}//end j2
-			for(int j2=0; j2<njp; j2++) {
-				if(tj < j2) {
-					jnk1 = 0.;
-					for(int k=0; k<ncovc; k++) jnk1 += jnk0[j][tj][k]*tmp_1[i][k];
-					Wc1 = jnk1+tmp_2[i][tj]*bzic[j];
-					
-					jnk1 = 0;
-					for(int k=0; k<ncovc; k++) jnk1 += jnk0[j][j2][k]*tmp_1[i][k];	
-					Wc2 = jnk1+tmp_2[i][j2]*bzic[j];
 
-					for(int k=0; k<ncov; k++) temp[j][k] += (zs[j][k]-s1s0[j2][k])*wdm1[j][j2]*(Wc1-Wc2);
+		for(int i=0; i<n; i++) {		
+			for(int j=0; j<njp; j++) {
+				for(int k=0; k<ncovc; k++) tmp_1[i][k] += (zcs[i][k]-s1s0c[j][k])*dmci[i][j];
+			}			
+		}//end i
+	
+		for(int j=0; j<njp; j++) {
+			if(s0c[j] > 0.) {
+				for(int i=0; i<n; i++) {
+					if(j > 0) tmp_2[i][j] = tmp_2[i][j-1]+dmci[i][j]/s0c[j];
+					else tmp_2[i][j] = dmci[i][j]/s0c[j];
 				}
-			}//end j2
-			for(int k=0; k<ncov; k++) psihat[i][k] += temp[j][k];
-		}
-	}//endi
+			}
+			else {
+				for(int i=0; i<n; i++) {
+					if(j > 0) tmp_2[i][j] = tmp_2[i][j-1];
+					else tmp_2[i][j] = 0.;
+				}
+			}
+		}//endj
+	
+		for(int i=0; i<n; i++) {		
+			for(int j=0; j<njp; j++) {
+				for(int k=0; k<ncovc; k++) ht[k][0] = h[i][j][k];
+				jnktmp = matmult(transpose(ht),ric0inv);		
+				for(int k=0; k<ncovc; k++) jnk0[i][j][k] = jnktmp[0][k];		
+			}
+		}//end i
+	
+		for(int i=0; i<n; i++) {
+			for(int j=0; j<n; j++) {
+				for(int k=0; k<ncov; k++) temp[j][k] = 0.;
+				tj = 0;
+				for(int j2=0; j2<njp; j2++) {
+					if(ts[j] == tjp[j2]) {
+						tj = j2;
+						break;
+					}
+				}//end j2
+				for(int j2=0; j2<njp; j2++) {
+					if(tj < j2) {
+						jnk1 = 0.;
+						for(int k=0; k<ncovc; k++) jnk1 += jnk0[j][tj][k]*tmp_1[i][k];
+						Wc1 = jnk1+tmp_2[i][tj]*bzic[j];
+					
+						jnk1 = 0;
+						for(int k=0; k<ncovc; k++) jnk1 += jnk0[j][j2][k]*tmp_1[i][k];	
+						Wc2 = jnk1+tmp_2[i][j2]*bzic[j];
+
+						for(int k=0; k<ncov; k++) temp[j][k] += (zs[j][k]-s1s0[j2][k])*wdm1[j][j2]*(Wc1-Wc2);
+					}
+				}//end j2
+				for(int k=0; k<ncov; k++) psihat[i][k] += temp[j][k];
+			}
+		}//endi
+	}//var_conservative
 
 	for(int i=0; i<n; i++) {
 		for(int k=0; k<ncov; k++) {
@@ -1458,7 +1461,7 @@ void FG_KM_Strata::fgest1(int njp, float **wy, float **wdn, vector<float> &gfg1,
 }
 
 void FG_KM_Strata::fgest2km(vector<float> &tjp, int njp, float **wy, float **wdn, float gfg1[], float **dnc, float **yc, float **dnci, 
-					 float var[], int nvar, float lambda10[], float tbase[], float lambda10sd[], float Wlambda[], float Wbeta[]) const {
+					 float var[], int nvar, float lambda10[], float tbase[], float lambda10sd[], float Wlambda[], float Wbeta[], float *var_conservative) const {
 	//variable declaration	
 	int count = 0, count2 = 0, tj = 0, count4 = 0;
 	float wdnsum, btmp, event_or_not, det, jnk4, jnk5, jnk6;
@@ -1516,7 +1519,7 @@ void FG_KM_Strata::fgest2km(vector<float> &tjp, int njp, float **wy, float **wdn
 		for(int j=0; j<njp; j++) Wc[i][j] = new float[nstrata];
 	}
 	
-	//initializaztion
+	//initialization
 	for(int i=0; i<n; i++) {
 		btmp = 0.;	
 		for(int k=0; k<nvar; k++) btmp += gfg1[k]*zs[i][k];		
@@ -1622,51 +1625,53 @@ void FG_KM_Strata::fgest2km(vector<float> &tjp, int njp, float **wy, float **wdn
 		}	
 	}//endj
 	
-	//calculate dmci & yci
-	for(int j=0; j<njp; j++) {
-		for(int m=0; m<nstrata; m++) {
-			if(j > 0 && yc[j][m] > 0) achat[j][m] = achat[j-1][m]+dnc[j][m]/yc[j][m];
-			else if(j > 0 && yc[j][m] == 0) achat[j][m] = achat[j-1][m];
-			else if(j ==0 && yc[j][m] > 0) achat[j][m] = dnc[j][m]/yc[j][m];
-		}
-		for(int i=0; i<n; i++) {
-			yci[i][j] = 0.;
-			if (ts[i] >= tjp[j]) yci[i][j] = 1.;
+	if(var_conservative[0] == 0.) {
+		//calculate dmci & yci
+		for(int j=0; j<njp; j++) {
 			for(int m=0; m<nstrata; m++) {
-				if(j > 0 && strata_var[i] == m) dmci[i][j][m] = dnci[i][j]-yci[i][j]*(achat[j][m]-achat[j-1][m]);   
-				else dmci[i][j][m] = 0.;
+				if(j > 0 && yc[j][m] > 0) achat[j][m] = achat[j-1][m]+dnc[j][m]/yc[j][m];
+				else if(j > 0 && yc[j][m] == 0) achat[j][m] = achat[j-1][m];
+				else if(j ==0 && yc[j][m] > 0) achat[j][m] = dnc[j][m]/yc[j][m];
 			}
-		}
-	}//endj
+			for(int i=0; i<n; i++) {
+				yci[i][j] = 0.;
+				if (ts[i] >= tjp[j]) yci[i][j] = 1.;
+				for(int m=0; m<nstrata; m++) {
+					if(j > 0 && strata_var[i] == m) dmci[i][j][m] = dnci[i][j]-yci[i][j]*(achat[j][m]-achat[j-1][m]);   
+					else dmci[i][j][m] = 0.;
+				}
+			}
+		}//endj
 	
-	//calculate Wc matrix and variance
-	for(int j=0; j<njp; j++) {
-		for(int i=0; i<n; i++) {
-			for(int m=0; m<nstrata; m++) {
-				if(j > 0 && yc[j][m] > 0) Wc[i][j][m] = Wc[i][j-1][m]+dmci[i][j][m]/yc[j][m];
-				else if(j > 0 && yc[j][m] == 0) Wc[i][j][m] = Wc[i][j-1][m];
-				else if(j == 0 && yc[j][m] > 0) Wc[i][j][m] = dmci[i][j][m]/yc[j][m];
+		//calculate Wc matrix and variance
+		for(int j=0; j<njp; j++) {
+			for(int i=0; i<n; i++) {
+				for(int m=0; m<nstrata; m++) {
+					if(j > 0 && yc[j][m] > 0) Wc[i][j][m] = Wc[i][j-1][m]+dmci[i][j][m]/yc[j][m];
+					else if(j > 0 && yc[j][m] == 0) Wc[i][j][m] = Wc[i][j-1][m];
+					else if(j == 0 && yc[j][m] > 0) Wc[i][j][m] = dmci[i][j][m]/yc[j][m];
+				}
 			}
-		}
-	}//endj	
-	for(int i=0; i<n; i++) {
-		for(int j=0; j<n; j++) {
-			for(int k=0; k<nvar; k++) temp[j][k] = 0.;
-			for(int j2=0; j2<njp; j2++) {
-				if(ts[j] == tjp[j2]) {
-					tj = j2;
-					break;
-				}
-			}//end j2
-			for(int j2=0; j2<njp; j2++) {
-				if(tj < j2) {
-					for(int k=0; k<nvar; k++) temp[j][k] += (zs[j][k]-s1s0[j2][k])*wdm1[j][j2]*(Wc[i][tj][strata_var[i]]-Wc[i][j2][strata_var[i]]);
-				}
-			}//end j2
-			for(int k=0; k<nvar; k++) psihat[i][k] += temp[j][k];
-		}
-	}//end i,j
-
+		}//endj	
+		for(int i=0; i<n; i++) {
+			for(int j=0; j<n; j++) {
+				for(int k=0; k<nvar; k++) temp[j][k] = 0.;
+				for(int j2=0; j2<njp; j2++) {
+					if(ts[j] == tjp[j2]) {
+						tj = j2;
+						break;
+					}
+				}//end j2
+				for(int j2=0; j2<njp; j2++) {
+					if(tj < j2) {
+						for(int k=0; k<nvar; k++) temp[j][k] += (zs[j][k]-s1s0[j2][k])*wdm1[j][j2]*(Wc[i][tj][strata_var[i]]-Wc[i][j2][strata_var[i]]);
+					}
+				}//end j2
+				for(int k=0; k<nvar; k++) psihat[i][k] += temp[j][k];
+			}
+		}//end i,j
+	}//var_conservative
+	
 	for(int i=0; i<n; i++) {
 		for(int k=0; k<nvar; k++) {
 			tempsum2[i][k] = etahat[i][k]+psihat[i][k];                      
@@ -2186,7 +2191,7 @@ void FG_COX_Strata::fgest1(int njp, float **wy, float **wdn, vector<float> &gfg1
 	return;
 }
 
-void FG_COX_Strata::fgest2cox(vector<float> &tjp, int njp, vector<float> &betac, float **ric, float **rlamc0, float ***s1s0c, float **wy, float **wdn, float gfg1[], float **dnc, float **yc, float **dnci, float var[], float lambda10[], float tbase[], float lambda10sd[], float Wlambda[], float Wbeta[], float *iflagric) const {
+void FG_COX_Strata::fgest2cox(vector<float> &tjp, int njp, vector<float> &betac, float **ric, float **rlamc0, float ***s1s0c, float **wy, float **wdn, float gfg1[], float **dnc, float **yc, float **dnci, float var[], float lambda10[], float tbase[], float lambda10sd[], float Wlambda[], float Wbeta[], float *iflagric, float *var_conservative) const {
 	//variable declaration
 	int count = 0, count2 = 0, count4 = 0, tj;
 	float wdnsum, btmp, btmp2, event_or_not, det, Wc1 = 0., Wc2 = 0., jnk1 = 0., jnk4, jnk5, jnk6;
@@ -2378,87 +2383,88 @@ void FG_COX_Strata::fgest2cox(vector<float> &tjp, int njp, vector<float> &betac,
 		return;
 	}
 	
-	for(int j=0; j<njp; j++) {
-		for(int i=0; i<n; i++) {
-			yci[i][j] = 0.;
-			if (ts[i] >= tjp[j]) yci[i][j] = 1.;
-			if(j > 0) dmci[i][j] = dnci[i][j]-yci[i][j]*bzic[i]*(rlamc0[j][strata_var[i]]-rlamc0[j-1][strata_var[i]]);
-			else dmci[i][j] = dnci[i][j]-yci[i][j]*bzic[i]*rlamc0[j][strata_var[i]];
-		}
-	}//endj
-
-	for(int m=0; m<nstrata; m++) {
+	if(var_conservative[0] == 0.) {
 		for(int j=0; j<njp; j++) {
-			s0c[j][m] = 0.;	
 			for(int i=0; i<n; i++) {
-				if(ts[i] >= tjp[j] && strata_var[i] == m) s0c[j][m] += bzic[i];
+				yci[i][j] = 0.;
+				if (ts[i] >= tjp[j]) yci[i][j] = 1.;
+				if(j > 0) dmci[i][j] = dnci[i][j]-yci[i][j]*bzic[i]*(rlamc0[j][strata_var[i]]-rlamc0[j-1][strata_var[i]]);
+				else dmci[i][j] = dnci[i][j]-yci[i][j]*bzic[i]*rlamc0[j][strata_var[i]];
 			}
-		}
-	}//endm
+		}//endj
 
-	for(int j=0; j<njp; j++) {
-		for(int i=0; i<n; i++) {
-			for(int k=0; k<ncovc; k++) {
-				if(j > 0) h[i][j][k] = h[i][j-1][k]+bzic[i]*(zcs[i][k]-s1s0c[j][k][strata_var[i]])*(rlamc0[j][strata_var[i]]-rlamc0[j-1][strata_var[i]]);
-				else h[i][j][k] = bzic[i]*(zcs[i][k]-s1s0c[j][k][strata_var[i]])*rlamc0[j][strata_var[i]];
+		for(int m=0; m<nstrata; m++) {
+			for(int j=0; j<njp; j++) {
+				s0c[j][m] = 0.;	
+				for(int i=0; i<n; i++) {
+					if(ts[i] >= tjp[j] && strata_var[i] == m) s0c[j][m] += bzic[i];
+				}
 			}
-		}
-	}//end j
+		}//endm
 
-	for(int i=0; i<n; i++) {
 		for(int j=0; j<njp; j++) {
-			for(int k=0; k<ncovc; k++) tmp_1[i][k] += (zcs[i][k]-s1s0c[j][k][strata_var[i]])*dmci[i][j];
-		}
-	}//end i	
+			for(int i=0; i<n; i++) {
+				for(int k=0; k<ncovc; k++) {
+					if(j > 0) h[i][j][k] = h[i][j-1][k]+bzic[i]*(zcs[i][k]-s1s0c[j][k][strata_var[i]])*(rlamc0[j][strata_var[i]]-rlamc0[j-1][strata_var[i]]);
+					else h[i][j][k] = bzic[i]*(zcs[i][k]-s1s0c[j][k][strata_var[i]])*rlamc0[j][strata_var[i]];
+				}
+			}
+		}//end j
+
+		for(int i=0; i<n; i++) {
+			for(int j=0; j<njp; j++) {
+				for(int k=0; k<ncovc; k++) tmp_1[i][k] += (zcs[i][k]-s1s0c[j][k][strata_var[i]])*dmci[i][j];
+			}
+		}//end i	
 		
-	for(int j=0; j<njp; j++) {
-		for(int i=0; i<n; i++) {
-			if(s0c[j][strata_var[i]] > 0.) {
-				if(j > 0) tmp_2[i][j] = tmp_2[i][j-1]+dmci[i][j]/s0c[j][strata_var[i]];
-				else tmp_2[i][j] = dmci[i][j]/s0c[j][strata_var[i]];
-			}
-			else {
-				if(j > 0) tmp_2[i][j] = tmp_2[i][j-1];
-				else tmp_2[i][j] = 0.;		
-			}
-		}
-	}//endj		
-
-	for(int i=0; i<n; i++) {
 		for(int j=0; j<njp; j++) {
-			for(int k=0; k<ncovc; k++) ht[k][0] = h[i][j][k];
-			jnktmp = matmult(transpose(ht),ric0inv);		
-			for(int k=0; k<ncovc; k++) jnk0[i][j][k] = jnktmp[0][k];		
-		}
-	}//end i						
-
-	for(int i=0; i<n; i++) {
-		for(int j=0; j<n; j++) {
-			for(int k=0; k<ncov; k++) temp[j][k] = 0.;
-			tj = 0;
-			for(int j2=0; j2<njp; j2++) {
-				if(ts[j] == tjp[j2]) {
-					tj = j2;
-					break;
+			for(int i=0; i<n; i++) {
+				if(s0c[j][strata_var[i]] > 0.) {
+					if(j > 0) tmp_2[i][j] = tmp_2[i][j-1]+dmci[i][j]/s0c[j][strata_var[i]];
+					else tmp_2[i][j] = dmci[i][j]/s0c[j][strata_var[i]];
 				}
-			}//end j2
-			for(int j2=0; j2<njp; j2++) {
-				if(tj < j2) {
-					jnk1 = 0.;
-					for(int k=0; k<ncovc; k++) jnk1 += jnk0[j][tj][k]*tmp_1[i][k];
-					Wc1 = jnk1+tmp_2[i][tj]*bzic[j];
+				else {
+					if(j > 0) tmp_2[i][j] = tmp_2[i][j-1];
+					else tmp_2[i][j] = 0.;		
+				}
+			}
+		}//endj		
+
+		for(int i=0; i<n; i++) {
+			for(int j=0; j<njp; j++) {
+				for(int k=0; k<ncovc; k++) ht[k][0] = h[i][j][k];
+				jnktmp = matmult(transpose(ht),ric0inv);		
+				for(int k=0; k<ncovc; k++) jnk0[i][j][k] = jnktmp[0][k];		
+			}
+		}//end i						
+
+		for(int i=0; i<n; i++) {
+			for(int j=0; j<n; j++) {
+				for(int k=0; k<ncov; k++) temp[j][k] = 0.;
+				tj = 0;
+				for(int j2=0; j2<njp; j2++) {
+					if(ts[j] == tjp[j2]) {
+						tj = j2;
+						break;
+					}
+				}//end j2
+				for(int j2=0; j2<njp; j2++) {
+					if(tj < j2) {
+						jnk1 = 0.;
+						for(int k=0; k<ncovc; k++) jnk1 += jnk0[j][tj][k]*tmp_1[i][k];
+						Wc1 = jnk1+tmp_2[i][tj]*bzic[j];
 				
-					jnk1 = 0;
-					for(int k=0; k<ncovc; k++) jnk1 += jnk0[j][j2][k]*tmp_1[i][k];	
-					Wc2 = jnk1+tmp_2[i][j2]*bzic[j];
+						jnk1 = 0;
+						for(int k=0; k<ncovc; k++) jnk1 += jnk0[j][j2][k]*tmp_1[i][k];	
+						Wc2 = jnk1+tmp_2[i][j2]*bzic[j];
 
-					for(int k=0; k<ncov; k++) temp[j][k] += (zs[j][k]-s1s0[j2][k])*wdm1[j][j2]*(Wc1-Wc2);
-				}
-			}//end j2
-			for(int k=0; k<ncov; k++) psihat[i][k] += temp[j][k];
-		}
-	}//endi		
-
+						for(int k=0; k<ncov; k++) temp[j][k] += (zs[j][k]-s1s0[j2][k])*wdm1[j][j2]*(Wc1-Wc2);
+					}
+				}//end j2
+				for(int k=0; k<ncov; k++) psihat[i][k] += temp[j][k];
+			}
+		}//endi		
+	}//var_conservative
 
 	// Variance for betas
 	for(int i=0; i<n; i++) {
