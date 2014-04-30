@@ -1,4 +1,4 @@
-dbec2f47a72b193bbdfe95cff3d109b1 *DESCRIPTION
+9832cec9aa82873f9b697c15097234db *DESCRIPTION
 a9e1c2700584eafc54dfe998c0277ac4 *NAMESPACE
 0e3d484d929f3059878d541e09291685 *R/wrap.R
 8b6071746d2a7e4ba09ab5be17dafbf1 *man/Cens.Rd
@@ -12,8 +12,8 @@ d22d96bc5a5b34bcc4f3433e90a2650d *man/plot.crrwt.pred.Rd
 01eef503d259167b9b41cc93b048e739 *man/predict.crrwt.Rd
 161f0622fa4a1ca453eb229f9d3e490c *man/print.crrwt.Rd
 968c8c8d5cffd8cd70ef20895985e690 *man/summary.crrwt.Rd
-be9f65b5ea6cf3c6b753a67ef8e7efe5 *man/wtcrsk-package.Rd
-66418c9d976b73caad8bb7471d813e78 *src/p1.cc
+b41e95ce5d4ccee609ef43a46fac08a3 *man/wtcrsk-package.Rd
+5ab0e7bb9bc64437719aee4cc05136f1 *src/p1.cc
 5506853a82610c9ea5a9b71c815d2b0f *src/p1.h
 0d8c7a39d49202e76a0b0b72d371d1fb *src/tntjama/jama_cholesky.h
 82e2f11db6b4514138c19ef0cc59e70e *src/tntjama/jama_eig.h

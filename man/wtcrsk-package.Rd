@@ -12,8 +12,8 @@ Estimation and regression modeling of subdistribution functions for competing ri
 \tabular{ll}{
 Package: \tab wtcrsk\cr
 Type: \tab Package\cr
-Version: \tab 1.1\cr
-Date: \tab 2014-01-03\cr
+Version: \tab 1.2\cr
+Date: \tab 2014-04-30\cr
 License: \tab GPL >= 2\cr
 }
 }

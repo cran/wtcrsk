@@ -374,7 +374,8 @@ void FG_KM::fgest2km(vector<float> &tjp, int njp, float **wy, float **wdn, float
 			for(int i=0; i<n; i++) {
 				yci[i][j] = 0.;
 				if (ts[i] >= tjp[j]) yci[i][j] = 1.;
-				dmci[i][j] = dnci[i][j]-yci[i][j]*(achat[j]-achat[j-1]);
+				if(j > 0) dmci[i][j] = dnci[i][j]-yci[i][j]*(achat[j]-achat[j-1]);
+				else dmci[i][j] = dnci[i][j]-yci[i][j]*achat[j];
 			}
 		}//endj
 	
