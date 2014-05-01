@@ -33,8 +33,8 @@ float Determinant(float **a,int n) {
             }
          }
          det += pow(-1.0,1.0+j1+1.0)*a[0][j1]*Determinant(m,n-1);
-         for(int i=0; i<n-1; i++) free(m[i]);
-         free(m);
+         for(int i=0; i<n-1; i++) delete[] m[i];
+         delete[] m;
       }
    }
    return(det);
