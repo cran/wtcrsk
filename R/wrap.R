@@ -2,12 +2,9 @@ Crsk <- function(t,ic) {cbind(t,ic)}
 Cens <- function(t,ic) {cbind(t,ic)}
 
 crr.wt.KM <- function(t,ic,z,variance,var.conservative) {
-  n.total <- length(t)
-  n.missing <- 0
   var.name <- colnames(z) 
-  miss.index <- NULL
-  n <- n.total-n.missing
   
+  n <- length(t)
   ncov <- ncol(as.matrix(z))
   tmp <- cbind(t, ic, z)
   sort.tmp <- tmp[order(tmp[,1]),]
@@ -48,9 +45,7 @@ crr.wt.KM <- function(t,ic,z,variance,var.conservative) {
                 a10=out$a10[1:count_event], 
                 a10se=out$a10sd[1:count_event], 
                 W_lambda=out$Wlambda[1:(count_event*n)], 
-                W_beta=out$Wbeta[1:(n*ncov)],
-                n = n.total,
-                n.missing = n.missing)
+                W_beta=out$Wbeta[1:(n*ncov)])
   }
   else {
     res <- list(weight="KM",
@@ -62,9 +57,7 @@ crr.wt.KM <- function(t,ic,z,variance,var.conservative) {
                 a10=out$a10[1:count_event], 
                 a10se=out$a10sd[1:count_event], 
                 W_lambda=out$Wlambda[1], 
-                W_beta=out$Wbeta[1],
-                n = n.total,
-                n.missing = n.missing)    
+                W_beta=out$Wbeta[1])    
   }
   class(res) <- "crrwt"
   return(res)
@@ -72,15 +65,12 @@ crr.wt.KM <- function(t,ic,z,variance,var.conservative) {
 
 
 crr.wt.COX <- function(t,ic,z,zc,variance,var.conservative) {
-  n.total <- length(t)
-  n.missing <- 0
   var.name <- colnames(z) 
-  miss.index <- NULL
-  n <- n.total-n.missing
   
   if(is.null(zc)) {
     cat("\n  Warning: Covariate set for censoring is missing. \n  Fit a Cox model for the censoring distribution using terms in argument 'z' as the covariate set\n\n")
     zc <- z
+	n <- length(t)
     ncov <- ncol(as.matrix(z))
     ncovc <- ncol(as.matrix(zc))
     tmp <- cbind(t, ic, z, zc)
@@ -135,9 +125,7 @@ crr.wt.COX <- function(t,ic,z,zc,variance,var.conservative) {
                   a10=out$a10[1:count_event],
                   a10se=out$a10sd[1:count_event], 
                   W_lambda=out$Wlambda[1:(count_event*n)], 
-                  W_beta=out$Wbeta[1:(n*ncov)],
-                  n=n.total,
-                  n.missing=n.missing)
+                  W_beta=out$Wbeta[1:(n*ncov)])
     }
     else {
       res <- list(weight="COX",
@@ -150,14 +138,13 @@ crr.wt.COX <- function(t,ic,z,zc,variance,var.conservative) {
                   a10=out$a10[1:count_event],
                   a10se=out$a10sd[1:count_event], 
                   W_lambda=out$Wlambda[1], 
-                  W_beta=out$Wbeta[1],
-                  n=n.total,
-                  n.missing=n.missing)
+                  W_beta=out$Wbeta[1])
     }
     class(res) <- "crrwt"
     return(res)
   }
   else { ## when zc is specified
+	n <- length(t)
     ncov <- ncol(as.matrix(z))
     ncovc <- ncol(as.matrix(zc))
     tmp <- cbind(t, ic, z, zc)
@@ -212,9 +199,7 @@ crr.wt.COX <- function(t,ic,z,zc,variance,var.conservative) {
                   a10=out$a10[1:count_event],
                   a10se=out$a10sd[1:count_event], 
                   W_lambda=out$Wlambda[1:(count_event*n)], 
-                  W_beta=out$Wbeta[1:(n*ncov)],
-                  n=n.total,
-                  n.missing=n.missing)
+                  W_beta=out$Wbeta[1:(n*ncov)])
     }
     else {
       res <- list(weight="COX",
@@ -227,9 +212,7 @@ crr.wt.COX <- function(t,ic,z,zc,variance,var.conservative) {
                   a10=out$a10[1:count_event],
                   a10se=out$a10sd[1:count_event], 
                   W_lambda=out$Wlambda[1], 
-                  W_beta=out$Wbeta[1],
-                  n=n.total,
-                  n.missing=n.missing)      
+                  W_beta=out$Wbeta[1])      
     }
     
     class(res) <- "crrwt"
@@ -239,11 +222,7 @@ crr.wt.COX <- function(t,ic,z,zc,variance,var.conservative) {
 
 
 crr.wt.KM.str <- function(t,ic,z,strata.var,variance,var.conservative) {
-  n.total <- length(t)
-  n.missing <- 0
   var.name <- colnames(z) 
-  miss.index <- NULL
-  n <- n.total-n.missing
   
   # Pre-processing strata.var  
   if(is.null(strata.var)) {
@@ -263,6 +242,7 @@ crr.wt.KM.str <- function(t,ic,z,strata.var,variance,var.conservative) {
     }
   }
   
+  n <- length(t)
   ncov <- ncol(as.matrix(z))
   tmp <- cbind(t, ic, z, strata.std)
   sort.tmp <- tmp[order(tmp[,1]),]
@@ -305,9 +285,7 @@ crr.wt.KM.str <- function(t,ic,z,strata.var,variance,var.conservative) {
                 a10=out$a10[1:count_event], 
                 a10se=out$a10sd[1:count_event], 
                 W_lambda=out$Wlambda[1:(count_event*n)], 
-                W_beta=out$Wbeta[1:(n*ncov)],
-                n = n.total,
-                n.missing = n.missing)
+                W_beta=out$Wbeta[1:(n*ncov)])
   }
   else {
     res <- list(weight="Stratified KM",
@@ -319,9 +297,7 @@ crr.wt.KM.str <- function(t,ic,z,strata.var,variance,var.conservative) {
                 a10=out$a10[1:count_event], 
                 a10se=out$a10sd[1:count_event], 
                 W_lambda=out$Wlambda[1], 
-                W_beta=out$Wbeta[1],
-                n = n.total,
-                n.missing = n.missing)    
+                W_beta=out$Wbeta[1])    
   }
   class(res) <- "crrwt"
   return(res)  
@@ -329,11 +305,7 @@ crr.wt.KM.str <- function(t,ic,z,strata.var,variance,var.conservative) {
 
 
 crr.wt.COX.str <- function(t,ic,z,zc,strata.var,variance,var.conservative) {
-  n.total <- length(t)
-  n.missing <- 0
   var.name <- colnames(z) 
-  miss.index <- NULL
-  n <- n.total-n.missing
   
   # Pre-processing strata.var   
   if(is.null(strata.var)) {
@@ -356,6 +328,8 @@ crr.wt.COX.str <- function(t,ic,z,zc,strata.var,variance,var.conservative) {
   if(is.null(zc)) {
     cat("\n  Warning: Covariate set for censoring is missing. \n  Fit a stratified Cox model for the censoring distribution using terms in argument 'z' as the covariate set\n\n")
     
+	n <- length(t)
+	
     # Remove strata variable from regression variables
     strcol <- 0
     for(i in 1:dim(z)[2]) {
@@ -422,9 +396,7 @@ crr.wt.COX.str <- function(t,ic,z,zc,strata.var,variance,var.conservative) {
                   a10=out$a10[1:count_event],
                   a10se=out$a10sd[1:count_event], 
                   W_lambda=out$Wlambda[1:(count_event*n)], 
-                  W_beta=out$Wbeta[1:(n*ncov)],
-                  n=n.total,
-                  n.missing=n.missing)
+                  W_beta=out$Wbeta[1:(n*ncov)])
     }
     else {
       res <- list(weight="Stratified COX",
@@ -437,9 +409,7 @@ crr.wt.COX.str <- function(t,ic,z,zc,strata.var,variance,var.conservative) {
                   a10=out$a10[1:count_event],
                   a10se=out$a10sd[1:count_event], 
                   W_lambda=out$Wlambda[1], 
-                  W_beta=out$Wbeta[1],
-                  n=n.total,
-                  n.missing=n.missing)     
+                  W_beta=out$Wbeta[1])     
     }
     
     class(res) <- "crrwt"
@@ -447,6 +417,8 @@ crr.wt.COX.str <- function(t,ic,z,zc,strata.var,variance,var.conservative) {
   }
   else {
     # Remove strata variable from regression variables
+	n <- length(t)
+		
     strcol <- 0
     for(i in 1:dim(zc)[2]) {
       if(sum(zc[,i]==strata.var)==n) {
@@ -510,9 +482,7 @@ crr.wt.COX.str <- function(t,ic,z,zc,strata.var,variance,var.conservative) {
                   a10=out$a10[1:count_event],
                   a10se=out$a10sd[1:count_event], 
                   W_lambda=out$Wlambda[1:(count_event*n)], 
-                  W_beta=out$Wbeta[1:(n*ncov)],
-                  n=n.total,
-                  n.missing=n.missing)
+                  W_beta=out$Wbeta[1:(n*ncov)])
     }
     else {
       res <- list(weight="Stratified COX",
@@ -525,9 +495,7 @@ crr.wt.COX.str <- function(t,ic,z,zc,strata.var,variance,var.conservative) {
                   a10=out$a10[1:count_event],
                   a10se=out$a10sd[1:count_event], 
                   W_lambda=out$Wlambda[1], 
-                  W_beta=out$Wbeta[1],
-                  n=n.total,
-                  n.missing=n.missing)      
+                  W_beta=out$Wbeta[1])      
     }
     
     class(res) <- "crrwt"
@@ -539,6 +507,9 @@ crr.wt.COX.str <- function(t,ic,z,zc,strata.var,variance,var.conservative) {
 crr.wt <- function(formula, data, weight=c("KM","COX","KM.Strata","COX.Strata"), 
                    cens.formula, cause=1, strata.var, variance=TRUE, 
                    var.conservative=FALSE) {
+  inobj <- model.frame(formula,data,na.action=NULL)
+  n.total <- dim(as.matrix(inobj))[1]
+  
   # Pre-processing for formula
   Call <- match.call()
   indx <- match(c("formula","data"),names(Call),nomatch=0)
@@ -558,6 +529,8 @@ crr.wt <- function(formula, data, weight=c("KM","COX","KM.Strata","COX.Strata"),
   Y <- model.extract(m,"response")
   t <- Y[,1]
   ic <- Y[,2]
+  n <- length(t)
+  n.missing <- n.total - n
 
   # Factor  - class variables
   fac.indx <- NULL
@@ -617,9 +590,6 @@ crr.wt <- function(formula, data, weight=c("KM","COX","KM.Strata","COX.Strata"),
 
   z <- as.matrix(m[,2:dim(m)[2]],nc=dim(m[,2:dim(m)[2]])[2])
   colnames(z) <- colnames(m)[-1]
-  
-  n.total <- length(t)
-  n.missing <- 0
   var.name <- colnames(z) 
   miss.index <- NULL
   
@@ -648,28 +618,6 @@ crr.wt <- function(formula, data, weight=c("KM","COX","KM.Strata","COX.Strata"),
     zc <- as.matrix(m2[,-1])
   }
 
-  # Missing values removal
-  for(i in 1:n.total) {
-    if(is.null(zc)==FALSE) {
-      if(is.na(t[i]) || is.na(ic[i]) || any(is.na(z[i,])) || any(is.na(zc[i,]))) {
-        n.missing <- n.missing+1
-        miss.index <- c(miss.index,i)
-      }
-    }
-    else {
-      if(is.na(t[i]) || is.na(ic[i]) || any(is.na(z[i,]))) {
-        n.missing <- n.missing+1
-        miss.index <- c(miss.index,i)
-      }     
-    }    
-  }
-  if(is.null(miss.index)==FALSE) {
-    t <- t[-miss.index]
-    ic <- ic[-miss.index]
-    z <- z[-miss.index,]
-    zc <- zc[-miss.index,]
-  }
-  n <- n.total-n.missing
   
   if(cause > 1) {
     ic <- ifelse(ic==1, 999, ic)  
@@ -678,27 +626,36 @@ crr.wt <- function(formula, data, weight=c("KM","COX","KM.Strata","COX.Strata"),
   }
  
   # Pre-processing strata.var
+  z2 <- as.data.frame(z)
   if(missing(strata.var)) strata.var <- NULL
   else if(missing(data)==FALSE) {
-    strata.var <- eval(parse(text=paste(toString(substitute(data)),"$",
+    strata.var <- eval(parse(text=paste("z2$",
                                         toString(substitute(strata.var)),sep="")))
   }  
-  
+
   # Fitting the model
   if(weight=="KM") {
     res <- crr.wt.KM(t,ic,z,variance,var.conservative)
+	res$n <- n.total
+	res$n.missing <- n.missing
     return(res)
   }
   if(weight=="COX") {
     res <- crr.wt.COX(t,ic,z,zc,variance,var.conservative)
+	res$n <- n.total
+	res$n.missing <- n.missing
     return(res)
   } 
   if(weight=="KM.Strata") {
     res <- crr.wt.KM.str(t,ic,z,strata.var,variance,var.conservative)
+	res$n <- n.total
+	res$n.missing <- n.missing
     return(res)
   }  
   if(weight=="COX.Strata") {
     res <- crr.wt.COX.str(t,ic,z,zc,strata.var,variance,var.conservative)
+	res$n <- n.total
+	res$n.missing <- n.missing
     return(res)
   }
 }
@@ -828,7 +785,7 @@ summary.crrwt <- function(object, ...) {
   res[,4] <- exp(object$beta-qnorm(.975)*res[,2])
   res[,5] <- exp(object$beta+qnorm(.975)*res[,2])
   res[,6] <- res[,1]/res[,2]
-  res[,7] <- 2*(1-pnorm(abs(res[,6])))
+  res[,7] <- round(2*(1-pnorm(abs(res[,6]))),4)
   
   cat("\n Summary results: \n\n")
   cat(" Number of total observations:    ", object$n,"\n")
@@ -838,13 +795,13 @@ summary.crrwt <- function(object, ...) {
   print(round(res,3))
   
   if(object$weight=="KM") {
-    cat("\n Censoring distribution was modeled by using Kaplan-Meier estimators \n")
+    cat("\n Censoring distribution was modeled using the Kaplan-Meier estimator \n")
   }
   if(object$weight=="COX") {
     cat("\n Censoring distribution was modeled via Cox regression \n")
   }
   if(object$weight=="Stratified KM") {
-    cat("\n Censoring distribution was modeled by using stratified Kaplan-Meier estimators \n")
+    cat("\n Censoring distribution was modeled using the stratified Kaplan-Meier estimator \n")
   }
   if(object$weight=="Stratified COX") {
     cat("\n Censoring distribution was modeled via stratified Cox regression \n")

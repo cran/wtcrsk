@@ -3,17 +3,17 @@
 \alias{wtcrsk}
 \docType{package}
 \title{
-Competing risks regression models with covariate-adjusted censoring weight
+Competing isks regression models with covariate-adjusted censoring weights
 }
 \description{
-Estimation and regression modeling of subdistribution functions for competing risks data with adjustment for covariate-dependent censoring, as described in He et al. (2013).
+Estimation and regression modeling of subdistribution functions for competing risks data with adjustment for covariate-dependent censoring, as described in He et al. (2015).
 }
 \details{
 \tabular{ll}{
 Package: \tab wtcrsk\cr
 Type: \tab Package\cr
-Version: \tab 1.3\cr
-Date: \tab 2014-05-01\cr
+Version: \tab 1.4\cr
+Date: \tab 2015-09-20\cr
 License: \tab GPL >= 2\cr
 }
 }
@@ -24,7 +24,7 @@ Maintainer: Peng He <saturnhp@gmail.com>
 }
 
 \references{ 
-He P, Scheike TH and Zhang MJ, A proportional hazards regression model for the subdistribution with covariates adjusted censoring weight for competing risks data, Technical Report #61, Division of Biostatistics, Medical College of Wisconsin, November 2013.
+He P, Eriksson F, Scheike TH and Zhang MJ, A proportional hazards regression model for the subdistribution with covariates adjusted censoring weight for competing risks data, Scandinavian Journal of Statistics (2015), Article first published online.
 }
 
 \keyword{ package }
