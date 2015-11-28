@@ -628,11 +628,15 @@ crr.wt <- function(formula, data, weight=c("KM","COX","KM.Strata","COX.Strata"),
   # Pre-processing strata.var
   z2 <- as.data.frame(z)
   if(missing(strata.var)) strata.var <- NULL
-  else if(missing(data)==FALSE) {
+  else if(missing(data)==FALSE && (toString(substitute(strata.var)) %in% names(z2))) {
     strata.var <- eval(parse(text=paste("z2$",
                                         toString(substitute(strata.var)),sep="")))
   }  
-
+  else if(missing(data)==FALSE) {
+    strata.var <- eval(parse(text=paste("data$",
+                                        toString(substitute(strata.var)),sep="")))
+  } 
+	
   # Fitting the model
   if(weight=="KM") {
     res <- crr.wt.KM(t,ic,z,variance,var.conservative)
