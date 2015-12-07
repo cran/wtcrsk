@@ -906,7 +906,7 @@ void FG_COX::fgest2cox(vector<float> &tjp, int njp, vector<float> &betac, float 
 	Array2D<float> s2(ncov,ncov,0.);
 	Array2D<float> s2s0(ncov,ncov,0.);
 	Array2D<float> s1s0sq(ncov,ncov,0.);
-	Array2D<float> temp(njp,ncov,0.);
+	Array2D<float> temp(n,ncov,0.);
 	Array2D<float> Ewdn(njp,ncov,0.);
 	Array2D<float> etahat(n,ncov,0.);
 	Array2D<float> psihat(n,ncov,0.);
@@ -1125,7 +1125,7 @@ void FG_COX::fgest2cox(vector<float> &tjp, int njp, vector<float> &betac, float 
 				for(int k=0; k<ncovc; k++) jnk0[i][j][k] = jnktmp[0][k];		
 			}
 		}//end i
-	
+
 		for(int i=0; i<n; i++) {
 			for(int j=0; j<n; j++) {
 				for(int k=0; k<ncov; k++) temp[j][k] = 0.;
@@ -1150,7 +1150,7 @@ void FG_COX::fgest2cox(vector<float> &tjp, int njp, vector<float> &betac, float 
 					}
 				}//end j2
 				for(int k=0; k<ncov; k++) psihat[i][k] += temp[j][k];
-			}
+			}//endj
 		}//endi
 	}//var_conservative
 
@@ -2209,7 +2209,7 @@ void FG_COX_Strata::fgest2cox(vector<float> &tjp, int njp, vector<float> &betac,
 	Array2D<float> s2(ncov,ncov,0.);
 	Array2D<float> s2s0(ncov,ncov,0.);
 	Array2D<float> s1s0sq(ncov,ncov,0.);
-	Array2D<float> temp(njp,ncov,0.);
+	Array2D<float> temp(n,ncov,0.);
 	Array2D<float> Ewdn(njp,ncov,0.);
 	
 	Array2D<float> etahat(n,ncov,0.);
